@@ -7,7 +7,7 @@ from selenium.webdriver.support import expected_conditions as EC # 크롬의 어
 import time # 정해진 시간만큼 기다리게 하기 위한 패키지입니다
 driver = webdriver.Chrome(ChromeDriverManager().install()) # 웹 드라이버를 설치하고, 조종할 수 있는 크롬 창을 실행합니다
 
-driver.get("https://map.naver.com/v5/search/서울 성동구 카페")
+driver.get("https://map.naver.com/v5/search/서울 종로구 카페")
 
 try:
     element = WebDriverWait(driver, 10).until(
@@ -43,11 +43,11 @@ while brk: # 페이지 설정
         driver.find_element(By.XPATH, timeframe)
         addr = driver.find_elements(By.XPATH, f'//*[@id="app-root"]/div/div/div/div[6]/div/div[2]/div/div/div[3]/div/a/div[2]/div/span/div')
         # print(addr)
-        //*[@id="app-root"]/div/div/div/div[6]/div/div[2]/div/div/div[3]/div/a/div[2]/div/span/div
-        //*[@id="_pcmap_list_scroll_container"]/ul/li[28]/div[1]/div[1]/a/div/div/span[1]
-        //*[@id="_pcmap_list_scroll_container"]/ul/li[28]/div[1]/div[1]/a/div/div
+        # //*[@id="app-root"]/div/div/div/div[6]/div/div[2]/div/div/div[3]/div/a/div[2]/div/span/div
+        # //*[@id="_pcmap_list_scroll_container"]/ul/li[28]/div[1]/div[1]/a/div/div/span[1]
+        # //*[@id="_pcmap_list_scroll_container"]/ul/li[28]/div[1]/div[1]/a/div/div
         # addr += driver.find_elements(By.XPATH, f'//*[@id="_pcmap_list_scroll_container"]/ul/li[{i}]/div[1]/div/div/div/span/a/span[1]')
-
+        print(nm)
 
         if nm != []: # 이름이 비어있으면 아무것도 안하도록 했습니다
             # addr = addr[0].text
@@ -55,7 +55,7 @@ while brk: # 페이지 설정
             #     res = pd.concat([res, pd.DataFrame([nm[0].text, addr]).T]) # res 데이터프레임에 차곡차곡 쌓아줍니다
             #     res.to_csv('./res/cafe.csv', index=False) # 데이터가 실시간으로 저장되도록 합니다
             res = pd.concat([res, pd.DataFrame([nm[0].text]).T]) # res 데이터프레임에 차곡차곡 쌓아줍니다
-            res.to_csv('./source/res/byxhost.csv', index=False) # 데이터가 실시간으로 저장되도록 합니다
+            res.to_csv('./source/res/byxhost_jongno.csv', index=False) # 데이터가 실시간으로 저장되도록 합니다
 
         if i == 1: # 첫번째 상호를 불러왔다면, 이전 페이지의 첫번째 상호와 같은지 확인해 줍니다
             if fnm == nm:
