@@ -1,4 +1,5 @@
-import time
+import time, os
+import logging
 
 from io import TextIOWrapper
 from bs4 import BeautifulSoup
@@ -13,6 +14,9 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
+
+file_path = './res/yeonnam.csv'
+search_key = "연남동 카페"
 
 # 크롬 드라이버 실행
 def get_driver():
@@ -84,7 +88,10 @@ def get_store_data(driver:WebDriver, scroll_container: WebElement, file: TextIOW
 
       # 매장명 element 추출
       store_name = driver.find_element(By.CSS_SELECTOR,'#_title > span:nth-child(1)').get_attribute('innerHTML')
+      store_type = driver.find_element(By.CSS_SELECTOR,'#_title > span:nth-child(2)').get_attribute('innerHTML')
+      c_time = driver.find_element(By.CSS_SELECTOR, 'time').get_attribute('innerHTML')
       print("sn : ",store_name)
+      print("time : ",c_time)
        # -----------------here
 
       # 네이버 카테고리 element 추출
@@ -102,7 +109,7 @@ def get_store_data(driver:WebDriver, scroll_container: WebElement, file: TextIOW
       # address = get_element_to_text(address)
       # naver_category = get_element_to_text(naver_category)
 
-      file.write(store_name + "||"  + "\n")
+      file.write(store_name + ","  + store_type + "," + c_time + "\n")
       print("write file")
       to_search_iframe(driver)
     except TimeoutException:
@@ -110,9 +117,17 @@ def get_store_data(driver:WebDriver, scroll_container: WebElement, file: TextIOW
 
 # 메인 함수
 def naver_crawl():
-  filer = open('./source/res/bycss.csv','a',encoding='utf-8')
+  
+  try:
+    if not os.path.exists(file_path):
+      os.makedirs(file_path)
+  except:
+    print("failed to create directory")
+
+
+  filer = open(file_path,'a',encoding='utf-8')
   driver = get_driver()
-  search_place(driver,'연세대학교 맛집')
+  search_place(driver,search_key)
   to_search_iframe(driver)
   time.sleep(2)
 
