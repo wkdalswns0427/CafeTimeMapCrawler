@@ -15,7 +15,6 @@ from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 
-file_path = './res/yeonnam.csv'
 search_key = "연남동 카페"
 
 # 크롬 드라이버 실행
@@ -102,15 +101,14 @@ def get_store_data(driver:WebDriver, scroll_container: WebElement, file: TextIOW
       # print("category")
       
       # 매장주소 element 추출
-      # address = driver.find_element(By.CSS_SELECTOR,'.place_section_content > ul ._2yqUQ').get_attribute('innerHTML')
-      # print("addr : ",address)
+      address = driver.find_element(By.CSS_SELECTOR,'.place_section_content > ul ._2yqUQ').get_attribute('innerHTML')
+      print("addr : ",address)
 
       store_name = get_element_to_text(store_name)
       # address = get_element_to_text(address)
       # naver_category = get_element_to_text(naver_category)
 
-      file.write(store_name + ","  + store_type + "," + c_time + "\n")
-      print("write file")
+      # file.write(store_name + ","  + store_type + "," + c_time + "\n")
       to_search_iframe(driver)
     except TimeoutException:
       to_search_iframe(driver)
@@ -118,14 +116,14 @@ def get_store_data(driver:WebDriver, scroll_container: WebElement, file: TextIOW
 # 메인 함수
 def naver_crawl():
   
-  try:
-    if not os.path.exists(file_path):
-      os.makedirs(file_path)
-  except:
-    print("failed to create directory")
+  # try:
+  #   if not os.path.exists(file_path):
+  #     os.ma(file_path)
+  # except:
+  #   print("failed to create directory")
 
 
-  filer = open(file_path,'a',encoding='utf-8')
+  filer = open("test.csv",'a',encoding='utf-8')
   driver = get_driver()
   search_place(driver,search_key)
   to_search_iframe(driver)
