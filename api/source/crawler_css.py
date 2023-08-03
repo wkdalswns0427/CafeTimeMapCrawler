@@ -101,8 +101,8 @@ def get_store_data(driver:WebDriver, scroll_container: WebElement, file: TextIOW
       # print("category")
       
       # 매장주소 element 추출
-      address = driver.find_element(By.CSS_SELECTOR,'.place_section_content > ul ._2yqUQ').get_attribute('innerHTML')
-      print("addr : ",address)
+      # address = driver.find_element(By.CSS_SELECTOR,'.place_section_content > ul ._2yqUQ').get_attribute('innerHTML')
+      # print("addr : ",address)
 
       store_name = get_element_to_text(store_name)
       # address = get_element_to_text(address)

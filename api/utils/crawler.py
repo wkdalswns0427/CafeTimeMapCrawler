@@ -1,4 +1,5 @@
-import time
+import time, os
+import logging
 
 from io import TextIOWrapper
 from bs4 import BeautifulSoup
@@ -13,6 +14,8 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
+
+search_key = "광화문 카페"
 
 # 크롬 드라이버 실행
 def get_driver():
@@ -60,9 +63,11 @@ def get_element_to_text(element):
   return BeautifulSoup(element, "html.parser").get_text()
 
 # 매장정보 추출
-def get_store_data(driver:WebDriver, scroll_container: WebElement, file: TextIOWrapper):
+def get_store_data(driver:WebDriver, scroll_container: WebElement)-> dict:
+  result_dict = {}
   get_store_li = scroll_container.find_elements(By.CSS_SELECTOR,'ul > li')
-  
+  print("get_store_li len: ", len(get_store_li))
+
   for index in range(len(get_store_li)):
     selectorArgument = 'div:nth-of-type(1) > a'
 
@@ -83,30 +88,34 @@ def get_store_data(driver:WebDriver, scroll_container: WebElement, file: TextIOW
 
       # 매장명 element 추출
       store_name = driver.find_element(By.CSS_SELECTOR,'#_title > span:nth-child(1)').get_attribute('innerHTML')
-
-      # 네이버 카테고리 element 추출
-      if driver.find_element(By.CSS_SELECTOR,'#_title > span._3ocDE').is_displayed():
-        naver_category = driver.find_element(By.CSS_SELECTOR,'#_title > span._3ocDE').get_attribute('innerHTML')
-      else:
-        naver_category = ''
-      
-      # 매장주소 element 추출
-      address = driver.find_element(By.CSS_SELECTOR,'.place_section_content > ul ._2yqUQ').get_attribute('innerHTML')
-
+      store_type = driver.find_element(By.CSS_SELECTOR,'#_title > span:nth-child(2)').get_attribute('innerHTML')
+      c_time = driver.find_element(By.CSS_SELECTOR, 'time').get_attribute('innerHTML')
+      # c_time = driver.find_element(By.XPATH, '/html/body/div[3]/div/div/div/div[6]/div/div[2]/div/div/div[3]/div/a/div[2]/div/span[1]/div/text()[1]')
       store_name = get_element_to_text(store_name)
-      address = get_element_to_text(address)
-      naver_category = get_element_to_text(naver_category)
-
-      file.write(store_name + "|" + address + "|" + naver_category + "\n")
+      store_type = get_element_to_text(store_type)
+      c_time = get_element_to_text(c_time)
+      print("sn : ",store_name)
+      print("time : ",c_time)
+      result_dict[store_name] = {"type" : store_type,"time" : c_time}
+      
       to_search_iframe(driver)
     except TimeoutException:
       to_search_iframe(driver)
+  return result_dict
 
 # 메인 함수
 def naver_crawl():
-  filer = open('res/list.csv','a',encoding='utf-8')
+  
+  # try:
+  #   if not os.path.exists(file_path):
+  #     os.makedir(file_path)
+  # except:
+  #   print("failed to create directory")
+
+
+  # filer = open("test.csv",'a',encoding='utf-8')
   driver = get_driver()
-  search_place(driver,'연세대학교 맛집')
+  search_place(driver,search_key)
   to_search_iframe(driver)
   time.sleep(2)
 
@@ -120,11 +129,10 @@ def naver_crawl():
       for i in range(6):
         # 자바 스크립트 실행
         driver.execute_script("arguments[0].scrollBy(0,2000)",scroll_container)
-        print("execute")
         time.sleep(0.5)
-        # -----------------here
-      get_store_data(driver,scroll_container,filer)
+      res = get_store_data(driver,scroll_container)
       print("get_data")
+      print(res)
       is_continue = next_page_move(driver)
       print("nextpage")
       if is_continue == False:
