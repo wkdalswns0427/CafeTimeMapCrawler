@@ -1,5 +1,7 @@
 import time, os
 import logging
+from typing import Optional
+import pandas as pd
 
 from io import TextIOWrapper
 from bs4 import BeautifulSoup
@@ -87,15 +89,13 @@ class CrawlerNaverMap:
         except TimeoutException:
           self.to_search_iframe(driver)
 
-        # 매장명 element 추출
-        store_name = driver.find_element(By.CSS_SELECTOR,'#_title > span:nth-child(1)').get_attribute('innerHTML')
-        store_type = driver.find_element(By.CSS_SELECTOR,'#_title > span:nth-child(2)').get_attribute('innerHTML')
-        c_time = driver.find_element(By.CSS_SELECTOR, 'time').get_attribute('innerHTML')
-        # c_time = driver.find_element(By.XPATH, '/html/body/div[3]/div/div/div/div[6]/div/div[2]/div/div/div[3]/div/a/div[2]/div/span[1]/div/text()[1]')
-        store_name = self.get_element_to_text(store_name)
-        store_type = self.get_element_to_text(store_type)
-        c_time = self.get_element_to_text(c_time)
-        result_dict[store_name] = {"type" : store_type,"time" : c_time}
+        store_name = self.get_element_to_text(driver.find_element(By.CSS_SELECTOR,'#_title > span:nth-child(1)').get_attribute('innerHTML'))
+        store_type = self.get_element_to_text(driver.find_element(By.CSS_SELECTOR,'#_title > span:nth-child(2)').get_attribute('innerHTML'))
+        c_time = self.get_element_to_text(driver.find_element(By.CSS_SELECTOR, 'time').get_attribute('innerHTML'))
+
+        time_itself = c_time[:5]
+        time_content = c_time[-5:]
+        result_dict[store_name] = {"type" : store_type,"time" : time_itself, "content" : time_content}
         
         self.to_search_iframe(driver)
       except TimeoutException:
@@ -103,10 +103,10 @@ class CrawlerNaverMap:
     return result_dict
 
  
-  def naver_crawl(self)->dict:
+  def main(self, search_keyword : Optional[str] = search_key)->dict:
     
     driver = self.get_driver()
-    self.search_place(driver,search_key)
+    self.search_place(driver,search_keyword)
     self.to_search_iframe(driver)
     time.sleep(2)
 
@@ -135,4 +135,4 @@ class CrawlerNaverMap:
 
 if __name__ =="__main__":
   crw = CrawlerNaverMap()
-  crw.naver_crawl()
+  crw.main("광장동 카페")
