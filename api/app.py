@@ -2,6 +2,7 @@ import uvicorn
 import os
 from pydantic import BaseModel
 from typing import Optional,List
+from fastapi.responses import HTMLResponse, FileResponse
 from fastapi import FastAPI, status,HTTPException,Request
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles 
@@ -12,10 +13,8 @@ from router import route_naver
 
 app = FastAPI()
 # templates = Jinja2Templates(directory=os.path.abspath(os.path.expanduser('templates')))
-# app.mount("/static", StaticFiles(directory=os.path.abspath(os.path.expanduser('static'))), name="static") 
 app.include_router(route_naver.router)
-
-# app.include_router(route_mqtt.router)
+app.mount("/static", StaticFiles(directory="static"), name="static")
 
 
 app.add_middleware(
@@ -31,3 +30,9 @@ def init(request: Request):
     init = "initial page.. wait"
     return init
     # return templates.TemplateResponse("initial.html", {"request": request})
+
+@app.get('/favicon.ico')
+async def favicon():
+    file_name = "favicon.ico"
+    file_path = os.path.join(app.root_path, "static", file_name)
+    return FileResponse(path=file_path, headers={"Content-Disposition": "attachment; filename=" + file_name})

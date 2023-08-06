@@ -11,7 +11,7 @@ util = utils()
 
 
 # get time
-@router.get('/get_cafe_list', status_code=status.HTTP_200_OK)
+@router.get('/get_cafe_list/{search_key}', tags=['search_key'], status_code=status.HTTP_200_OK)
 def search_by_keyword(search_key : Optional[str]):
     res = crawler.main(search_keyword=search_key)
     cur_time = util.get_time()
@@ -25,5 +25,4 @@ def search_by_keyword(search_key : Optional[str]):
         else:
             pass
     
-    return temp
-
+    return res
