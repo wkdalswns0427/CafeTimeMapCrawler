@@ -8,12 +8,12 @@ from fastapi.staticfiles import StaticFiles
 from starlette.middleware.cors import CORSMiddleware
 
 from utils.crawler import *
-import router.router_naver
+from router import route_naver
 
 app = FastAPI()
 # templates = Jinja2Templates(directory=os.path.abspath(os.path.expanduser('templates')))
 # app.mount("/static", StaticFiles(directory=os.path.abspath(os.path.expanduser('static'))), name="static") 
-app.include_router(router)
+app.include_router(route_naver.router)
 
 # app.include_router(route_mqtt.router)
 

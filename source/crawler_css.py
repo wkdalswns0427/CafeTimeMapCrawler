@@ -21,9 +21,10 @@ search_key = "연남동 카페"
 def get_driver():
   options = webdriver.ChromeOptions()
   # 지정한 user-agent로 설정
-  options.add_argument("user-agent=Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664 Safari/537.36") 
+  user_agent = 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36'
+  options.add_argument("user-agent=" + user_agent) 
   # 크롬 화면 크기를 설정(but 반응형 사이트에서는 html요소가 달라질 수 있음)
-  options.add_argument("window-size=1440x900")
+  options.add_argument("window-size=720x480")
   # 브라우저가 백그라운드에서 실행됩니다.
   # options.add_argument("headless")
 

@@ -21,17 +21,18 @@ search_key = "광화문 카페"
 
 # 크롬 드라이버 실행
 class CrawlerNaverMap:
+  def __init__(self) -> None:
+    pass
+
   def get_driver(self):
     options = webdriver.ChromeOptions()
-    # 지정한 user-agent로 설정
     options.add_argument("user-agent=Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664 Safari/537.36") 
-    # 크롬 화면 크기를 설정(but 반응형 사이트에서는 html요소가 달라질 수 있음)
     options.add_argument("window-size=1440x900")
     # 브라우저가 백그라운드에서 실행됩니다.
     # options.add_argument("headless")
-
     driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()),options=options)  # chromedriver 열기
-    driver.get('https://map.naver.com')  # 주소 가져오기
+    driver.get('https://map.naver.com')
+    print("got driver")
     driver.implicitly_wait(60)
     return driver
 
@@ -45,6 +46,7 @@ class CrawlerNaverMap:
   # 다음 페이지 이동 및 마지막 페이지 검사
   def next_page_move(self,driver:WebDriver):
     # 페이지네이션 영역에 마지막 버튼 선택
+    #! ToDo : next page element 교체
     next_page_btn = driver.find_element(By.CSS_SELECTOR,'div._2ky45>a:last-child')
     next_page_class_name = BeautifulSoup(next_page_btn.get_attribute('class'), "html.parser")
 
@@ -104,8 +106,8 @@ class CrawlerNaverMap:
 
  
   def main(self, search_keyword : Optional[str] = search_key)->dict:
-    
     driver = self.get_driver()
+    print(driver)
     self.search_place(driver,search_keyword)
     self.to_search_iframe(driver)
     time.sleep(2)
@@ -122,7 +124,6 @@ class CrawlerNaverMap:
           driver.execute_script("arguments[0].scrollBy(0,2000)",scroll_container)
           time.sleep(0.5)
         res = self.get_store_data(driver,scroll_container)
-        print("get_data")
         print(res)
         is_continue = self.next_page_move(driver)
         print("nextpage")
