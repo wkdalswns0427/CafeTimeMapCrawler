@@ -18,7 +18,7 @@ def search_by_keyword(search_key : Optional[str]):
 
     temp = []
 
-    for key, values in res:
+    for key, values in res.items():
         close_time = values["time"]
         if util.compare_time(cur_time=cur_time, close_time=close_time):
             temp.append(key)

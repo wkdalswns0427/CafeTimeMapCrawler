@@ -47,7 +47,7 @@ class CrawlerNaverMap:
   def next_page_move(self,driver:WebDriver):
     # 페이지네이션 영역에 마지막 버튼 선택
     #! ToDo : next page element 교체
-    next_page_btn = driver.find_element(By.CSS_SELECTOR,'div._2ky45>a:last-child')
+    next_page_btn = driver.find_element(By.CSS_SELECTOR,'div.zRM9F>a:last-child')
     next_page_class_name = BeautifulSoup(next_page_btn.get_attribute('class'), "html.parser")
 
     if len(next_page_class_name.text) > 10:

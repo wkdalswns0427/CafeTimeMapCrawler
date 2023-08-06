@@ -5,7 +5,7 @@ class utils:
     def __init__(self) -> None:
         pass
 
-    def get_time()->str:
+    def get_time(self)->str:
         now = datetime.now()
         current_time = now.strftime("%H:%M")
         return current_time
