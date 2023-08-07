@@ -80,22 +80,18 @@ class CrawlerNaverMap:
 
       # 매장 항목 클릭
       get_store_li[index].find_element(By.CSS_SELECTOR,selectorArgument).click()
-      print("매장 항목 클릭")
       # 매장 상세로 iframe 이동
       driver.switch_to.default_content()
       driver.switch_to.frame('entryIframe')
-      print("매장 상세로 iframe 이동")
-
       time.sleep(1)
 
       try:
-        print("in try")
         try: 
           WebDriverWait(driver,5).until(EC.presence_of_element_located((By.CLASS_NAME, "place_didmount")))
-          print("wd wait")
         except TimeoutException:
           self.to_search_iframe(driver)
         print("in process")
+        time.sleep(1)
         store_name = self.get_element_to_text(driver.find_element(By.CSS_SELECTOR,'#_title > span:nth-child(1)').get_attribute('innerHTML'))
         store_type = self.get_element_to_text(driver.find_element(By.CSS_SELECTOR,'#_title > span:nth-child(2)').get_attribute('innerHTML'))
         time.sleep(1)

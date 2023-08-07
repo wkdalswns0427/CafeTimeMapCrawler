@@ -11,8 +11,6 @@ router = APIRouter()
 crawler = CrawlerNaverMap()
 util = utils()
 
-
-# get time
 @router.get('/get_cafe_list/{search_key}', tags=['search_key'], status_code=status.HTTP_200_OK) # response_model=OpenCafe
 def search_by_keyword(search_key : Optional[str]):
     res = crawler.main(search_keyword=search_key)
@@ -22,10 +20,7 @@ def search_by_keyword(search_key : Optional[str]):
 
     for key, values in res.items():
         close_time = values["time"]
-
-        print("cur_time = ",cur_time, "close_time = ",close_time)
         time_comp = util.compare_time(cur_time=cur_time, close_time=close_time)
-        print(time_comp)
         if time_comp:
             temp[key] = close_time
             # temp["Closing"]
