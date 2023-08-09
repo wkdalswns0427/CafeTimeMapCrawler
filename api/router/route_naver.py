@@ -20,6 +20,7 @@ def search_by_keyword(search_key : Optional[str]):
 
     for key, values in res.items():
         close_time = values["time"]
+        print(f"{key} -> cur : {cur_time} , cls : {close_time}")
         time_comp = util.compare_time(cur_time=cur_time, close_time=close_time)
         if time_comp:
             temp[key] = close_time
