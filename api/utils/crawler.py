@@ -28,10 +28,11 @@ class CrawlerNaverMap:
   def get_driver(self):
     options = webdriver.ChromeOptions()
     options.add_argument("user-agent=Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664 Safari/537.36") 
-    options.add_argument("window-size=720x480")
+    # options.add_argument("window-size=720x480")
 
-    options.add_argument("headless") # run browser on background
+    # options.add_argument("headless") # run browser on background
     driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()),options=options)  # chromedriver 열기
+    driver.maximize_window()
     driver.get('https://map.naver.com')
     driver.implicitly_wait(60)
     return driver
@@ -51,7 +52,7 @@ class CrawlerNaverMap:
     next_page_btn = driver.find_element(By.CSS_SELECTOR,'div.zRM9F>a:last-child')
     next_page_class_name = BeautifulSoup(next_page_btn.get_attribute('class'), "html.parser")
 
-    if len(next_page_class_name.text) > 5:
+    if len(next_page_class_name.text) > 3:
       print("검색완료")
       driver.quit()
       return False
@@ -61,7 +62,6 @@ class CrawlerNaverMap:
 
   # 검색 iframe 이동
   def to_search_iframe(self,driver:WebDriver):
-    print("----------------------iframe------------------------")
     driver.switch_to.default_content()
     driver.switch_to.frame('searchIframe')
 
@@ -90,7 +90,6 @@ class CrawlerNaverMap:
           WebDriverWait(driver,5).until(EC.presence_of_element_located((By.CLASS_NAME, "place_didmount")))
         except TimeoutException:
           self.to_search_iframe(driver)
-        print("in process")
         time.sleep(1)
         store_name = self.get_element_to_text(driver.find_element(By.CSS_SELECTOR,'#_title > span:nth-child(1)').get_attribute('innerHTML'))
         store_type = self.get_element_to_text(driver.find_element(By.CSS_SELECTOR,'#_title > span:nth-child(2)').get_attribute('innerHTML'))
