@@ -80,27 +80,38 @@ class CrawlerNaverMap:
 
       # 매장 항목 클릭
       get_store_li[index].find_element(By.CSS_SELECTOR,selectorArgument).click()
+      print("click")
       # 매장 상세로 iframe 이동
       driver.switch_to.default_content()
       driver.switch_to.frame('entryIframe')
+      print("to iframe")
       time.sleep(1)
 
       try:
         try: 
           WebDriverWait(driver,5).until(EC.presence_of_element_located((By.CLASS_NAME, "place_didmount")))
+          print("wd wait")
         except TimeoutException:
           self.to_search_iframe(driver)
         time.sleep(1)
-        store_name = self.get_element_to_text(driver.find_element(By.CSS_SELECTOR,'#_title > span:nth-child(1)').get_attribute('innerHTML'))
-        store_type = self.get_element_to_text(driver.find_element(By.CSS_SELECTOR,'#_title > span:nth-child(2)').get_attribute('innerHTML'))
-        time.sleep(1)
-        c_time = self.get_element_to_text(driver.find_element(By.CSS_SELECTOR, 'time').get_attribute('innerHTML'))
+        try:
+          print("find name")
+          store_name = self.get_element_to_text(driver.find_element(By.CSS_SELECTOR,'#_title > span:nth-child(1)').get_attribute('innerHTML'))
+          store_type = self.get_element_to_text(driver.find_element(By.CSS_SELECTOR,'#_title > span:nth-child(2)').get_attribute('innerHTML'))
+          time.sleep(1)
+          c_time = self.get_element_to_text(driver.find_element(By.CSS_SELECTOR, 'time').get_attribute('innerHTML'))
+        except Exception as e:
+          print(e)
+          store_name = "null"
+          store_type = "null"
+          c_time = "출력오류 00:00"
 
         time_itself = c_time[:5]
         time_content = c_time[-5:]
         result_dict[store_name] = {"type" : store_type,"time" : time_itself, "content" : time_content}
         print(store_name)
         self.to_search_iframe(driver)
+        print("next iframe")
       except TimeoutException:
         self.to_search_iframe(driver)
         return result_dict
