@@ -91,25 +91,6 @@ for index, gu_name in enumerate(gu_list):
                 place_hour = store_info.select('.info_item > .openhour > p > a')[0].text
                 place_tel = store_info.select('.info_item > .contact > span')[0].text
 
-
-                # # 사진url 수집
-                # detail = p.find_element(By.CSS_SELECTOR,'div.info_item > div.contact > a.moreview')
-                # detail.send_keys(Keys.ENTER)
-
-                # driver.switch_to.window(driver.window_handles[-1])
-
-                # place_photo = ""
-                # try:
-                #     photo = driver.find_element(By.CSS_SELECTOR,'span.bg_present')
-                #     photo_url = photo.get_attribute('style')
-                #     m = re.search('"(.+?)"', photo_url)
-                #     if m:
-                #         place_photo = m.group(1)
-                #     else:
-                #         place_photo = ""
-                # except:
-                #     place_photo = ""
-                # driver.close()
                 driver.switch_to.window(driver.window_handles[0])
                 print(place_name, place_address)
 
