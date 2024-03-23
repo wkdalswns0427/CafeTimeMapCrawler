@@ -1,12 +1,11 @@
-import time, os
-import logging
-from typing import Optional
+# 25개구 for문으로 돌려서 카페 정보 크롤링하기
+
+import os
+from time import sleep
+import time
+import re
 import pandas as pd
-
-from io import TextIOWrapper
 from bs4 import BeautifulSoup
-import warnings
-
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.webdriver import WebDriver
@@ -17,137 +16,115 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
+from utils.utils import utils
+from typing import Optional, List
 
-deafult_key = "광화문 카페"
-warnings.filterwarnings("ignore", category=UserWarning, module='bs4')
-# 크롬 드라이버 실행
-class CrawlerNaverMap:
-  def __init__(self) -> None:
-    pass
+class CrawlerKakaoMap:
+    def __init__(self) -> None:
+        pass
 
-  def get_driver(self):
-    options = webdriver.ChromeOptions()
-    options.add_argument("user-agent=Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664 Safari/537.36") 
-    # options.add_argument("window-size=720x480")
+    def crawlMap(self, keywords : list):
+        fileName = './res/requested.csv'
+        file = open(fileName, 'w', encoding='utf-8')
+        file.write("카페명" + "," + "주소" + "," + "영업시간" + "," + "전화번호"+"\n")
+        file.close()
 
-    # options.add_argument("headless") # run browser on background
-    driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()),options=options)  # chromedriver 열기
-    driver.maximize_window()
-    driver.get('https://map.naver.com')
-    driver.implicitly_wait(60)
-    return driver
+        for index, keyword in enumerate(keywords):
+            options = webdriver.ChromeOptions()
+            # options.add_argument('headless')
+            options.add_argument("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/86.0.4240.198 Safari/537.36   ")
+            options.add_argument('lang=ko_KR')
+            options.add_argument("headless")
+            driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()),options=options)
+            driver.get('https://map.kakao.com/')  # 주소 가져오기
+            search_area = driver.find_element(By.XPATH,'//*[@id="search.keyword.query"]') # 검색 창
+            search_area.send_keys(keyword + ' 카페')  # 검색어 입력
+            driver.find_element(By.XPATH,'//*[@id="search.keyword.submit"]').send_keys(Keys.ENTER)  # Enter로 검색
+            driver.implicitly_wait(3) # 기다려 주자
+            more_page = driver.find_element(By.ID,"info.search.place.more")
+            # more_page.click()
+            more_page.send_keys(Keys.ENTER) # 더보기 누르고
+            # 첫 번째 검색 페이지 끝
+            # driver.implicitly_wait(5) # 기다려 주자
+            time.sleep(1)
 
-  # 검색어 입력
-  def search_place(self,driver:WebDriver, search_text: str):
-    time.sleep(3)
-    search_input_box = driver.find_element(By.CSS_SELECTOR,"div.input_box>input.input_search")
-    search_input_box.send_keys(search_text)
-    search_input_box.send_keys(Keys.ENTER)
-    time.sleep(3)
+            # next 사용 가능?
+            next_btn = driver.find_element(By.ID,"info.search.page.next")
+            has_next = "disabled" not in next_btn.get_attribute("class").split(" ")
+            Page = 1
+            while has_next: # 다음 페이지가 있으면 loop
+            # for i in range(2, 6): # 2, 3, 4, 5
+                file = open(fileName, 'a', encoding='utf-8')
+                time.sleep(0.5)
+                # place_lists = driver.find_elements_by_css_selector('#info\.search\.place\.list > li:nth-child(1)')
+                # 페이지 루프
+                #info\.search\.page\.no1 ~ .no5
+                page_links = driver.find_elements(By.CSS_SELECTOR,"#info\.search\.page a")
+                pages = [link for link in page_links if "HIDDEN" not in link.get_attribute("class").split(" ")]
+                # print(len(pages), "개의 페이지 있음")
+                # pages를 하나씩 클릭하면서
+                for i in range(1, 6):
+                    xPath = '//*[@id="info.search.page.no' + str(i) + '"]'
+                    try:
+                        page = driver.find_element(By.XPATH,xPath)
+                        page.send_keys(Keys.ENTER)
+                    except: 
+                        print('End of Page')
+                        break
+                    sleep(3)
+                    place_lists = driver.find_elements(By.CSS_SELECTOR,'#info\.search\.place\.list > li')
+                    for p in place_lists: # WebElement
+                        # print(p.get_attribute('innerHTML'))
+                        # print("type of p:", type(p))
+                        store_html = p.get_attribute('innerHTML')
+                        store_info = BeautifulSoup(store_html, "html.parser")
 
-  # 다음 페이지 이동 및 마지막 페이지 검사
-  def next_page_move(self,driver:WebDriver):
-    # 페이지네이션 영역에 마지막 버튼 선택
-    print("next page active")
-    next_page_btn = driver.find_element(By.CSS_SELECTOR,'div.zRM9F>a:last-child')
-    next_page_class_name = BeautifulSoup(next_page_btn.get_attribute('class'), "html.parser")
+                        place_name = store_info.select('.head_item > .tit_name > .link_name')
+                        if len(place_name) == 0:
+                            continue # 광고
+                        place_name = store_info.select('.head_item > .tit_name > .link_name')[0].text
+                        place_address = store_info.select('.info_item > .addr > p')[0].text
+                        place_hour = store_info.select('.info_item > .openhour > p > a')[0].text
+                        place_tel = store_info.select('.info_item > .contact > span')[0].text
 
-    if len(next_page_class_name.text) > 3:
-      print("검색완료")
-      driver.quit()
-      return False
-    else:
-      next_page_btn.send_keys(Keys.ENTER)
-      return True
+                        driver.switch_to.window(driver.window_handles[0])
+                        file.write(place_name + "," + place_address + "," + place_hour + "," + place_tel + "\n")
+                    print(i, ' of', ' [ ' , Page, ' ] ')
+                next_btn = driver.find_element(By.ID,"info.search.page.next")
+                has_next = "disabled" not in next_btn.get_attribute("class").split(" ")
+                if not has_next:
+                    print('Arrow is Disabled')
+                    driver.close()
+                    file.close()
+                    break # 다음 페이지 없으니까 종료
+                else: # 다음 페이지 있으면
+                    Page += 1
+                    next_btn.send_keys(Keys.ENTER)
+            print("End of Crawl")
+            driver.quit()
+        
+        return True
+    
+    def findAll(self, filename : Optional[str]):
+        fileName = f'./res/{filename}.csv'
+        df = pd.read_csv(fileName, encoding='utf-8',sep=",")
+        ret = {}
+        for idx,data in enumerate(df):
+            temp = {"카페명" : data["카페명"],
+                    "주소" : data["주소"],
+                    "영업시간" : data["영업시간"],
+                    "전화번호" : data["전화번호"]}
+            ret[idx] = temp
+        
+        return ret
 
-  # 검색 iframe 이동
-  def to_search_iframe(self,driver:WebDriver):
-    driver.switch_to.default_content()
-    driver.switch_to.frame('searchIframe')
+    def findOpen(self, filename : Optional[str]):
+        res = {}
+        fileName = f'./res/{filename}.csv'
+        df = pd.read_csv(fileName, encoding='utf-8',sep=",")
+        current = utils.get_time()
+        for times in df['영업시간']:
+            if len(times)>4:
+                closing_time = times[-5:]
 
-  # element 텍스트 추출
-  def get_element_to_text(self,element):
-    return BeautifulSoup(element, "html.parser").get_text()
-
-  # 매장정보 추출
-  def get_store_data(self,driver:WebDriver, scroll_container: WebElement, result_dict : dict)-> dict:
-    get_store_li = scroll_container.find_elements(By.CSS_SELECTOR,'ul > li')
-    print("get_store_li len: ", len(get_store_li))
-
-    for index in range(len(get_store_li)):
-      print("loop ",index)
-      selectorArgument = 'div:nth-of-type(1) > a'
-
-      # 매장 항목 클릭
-      get_store_li[index].find_element(By.CSS_SELECTOR,selectorArgument).click()
-      print("click")
-      # 매장 상세로 iframe 이동
-      driver.switch_to.default_content()
-      driver.switch_to.frame('entryIframe')
-      print("to iframe")
-      time.sleep(1)
-
-      try:
-        try: 
-          WebDriverWait(driver,5).until(EC.presence_of_element_located((By.CLASS_NAME, "place_didmount")))
-          print("wd wait")
-        except TimeoutException:
-          self.to_search_iframe(driver)
-        time.sleep(1)
-        try:
-          print("find name")
-          store_name = self.get_element_to_text(driver.find_element(By.CSS_SELECTOR,'#_title > span:nth-child(1)').get_attribute('innerHTML'))
-          store_type = self.get_element_to_text(driver.find_element(By.CSS_SELECTOR,'#_title > span:nth-child(2)').get_attribute('innerHTML'))
-          time.sleep(1)
-          c_time = self.get_element_to_text(driver.find_element(By.CSS_SELECTOR, 'time').get_attribute('innerHTML'))
-        except Exception as e:
-          print(e)
-          store_name = "null"
-          store_type = "null"
-          c_time = "출력오류 00:00"
-
-        time_itself = c_time[:5]
-        time_content = c_time[-5:]
-        result_dict[store_name] = {"type" : store_type,"time" : time_itself, "content" : time_content}
-        print(store_name)
-        self.to_search_iframe(driver)
-        print("next iframe")
-      except TimeoutException:
-        self.to_search_iframe(driver)
-        return result_dict
-    print("end of for loop")
-    return result_dict
-
- 
-  def main(self, search_keyword : Optional[str] = deafult_key)->dict:
-    driver = self.get_driver()                                        
-    self.search_place(driver,search_keyword)
-    self.to_search_iframe(driver)
-    time.sleep(2)
-    result_dict = {}
-
-    try:
-      scroll_container = driver.find_element(By.ID,"_pcmap_list_scroll_container")
-    except:
-      print("스크롤 영역 감지 실패")
-
-    try:
-      while True:
-        for i in range(6):
-          driver.execute_script("arguments[0].scrollBy(0,2000)",scroll_container)
-          time.sleep(0.5)
-        result_dict = self.get_store_data(driver,scroll_container, result_dict)
-        print("fin----------------------------------------\n --> ",result_dict)
-        is_continue = self.next_page_move(driver)
-        print("nextpage")
-        if is_continue == False:
-          break
-      return result_dict
-    except Exception as e:
-      print("크롤링 과정 중 에러 발생 : ", e)
-
-      return result_dict
-
-if __name__ =="__main__":
-  crw = CrawlerNaverMap()
-  crw.main("광장동 카페")
+        return
