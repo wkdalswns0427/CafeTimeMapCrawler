@@ -129,8 +129,20 @@ def main2():
         if len(times)>4:
             closing_time = times[-5:]
 
+def findAll(filename : str):
+    fileName = f'./res/{filename}.csv'
+    df = pd.read_csv(fileName, encoding='utf-8',sep=",")
+    ret = {}
+    for idx,data in df.iterrows():
+        temp = {"카페명" : data[0],
+                "주소" : data[1],
+                "영업시간" : data[2],
+                "전화번호" : data[3]}
+        ret[idx] = temp
+    print(ret)
+    return ret
 
 
 if __name__=="__main__":
     # main1()
-    main2()
+    findAll('서대문구 신촌동')

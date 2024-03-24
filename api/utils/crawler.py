@@ -23,13 +23,24 @@ class CrawlerKakaoMap:
     def __init__(self) -> None:
         pass
 
-    def crawlMap(self, keywords : list):
-        fileName = './res/requested.csv'
-        file = open(fileName, 'w', encoding='utf-8')
-        file.write("카페명" + "," + "주소" + "," + "영업시간" + "," + "전화번호"+"\n")
-        file.close()
+    def is_exist(self, fileName : str):
+        dir = './res/'
+        ret = os.path.isfile(dir+fileName+".csv")
+        return ret
 
+    def make_file(self, fileName : str):
+        try:
+            filename = './res/'+fileName+'.csv'
+            file = open(filename, 'w', encoding='utf-8')
+            file.write("카페명" + "," + "주소" + "," + "영업시간" + "," + "전화번호"+"\n")
+            file.close()
+            return True
+        except:
+            return False 
+
+    def crawlMap(self, keywords : list):
         for index, keyword in enumerate(keywords):
+            fileName = './res/'+keyword+'.csv'
             options = webdriver.ChromeOptions()
             # options.add_argument('headless')
             options.add_argument("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/86.0.4240.198 Safari/537.36   ")
@@ -109,11 +120,11 @@ class CrawlerKakaoMap:
         fileName = f'./res/{filename}.csv'
         df = pd.read_csv(fileName, encoding='utf-8',sep=",")
         ret = {}
-        for idx,data in enumerate(df):
-            temp = {"카페명" : data["카페명"],
-                    "주소" : data["주소"],
-                    "영업시간" : data["영업시간"],
-                    "전화번호" : data["전화번호"]}
+        for idx,data in df.iterrows():
+            temp = {"카페명" : data[0],
+                    "주소" : data[1],
+                    "영업시간" : data[2],
+                    "전화번호" : data[3]}
             ret[idx] = temp
         
         return ret
